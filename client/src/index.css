@@ -1,0 +1,87 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/figtree';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/700.css';
+
+/* Design tokens — taken from the RMKCET certificate: its navy ink, gold frame,
+   paper background and Cormorant Garamond lettering */
+@theme {
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', ui-serif, Georgia, serif;
+
+  --color-ink: #0e1b36;
+  --color-ink-soft: #34405c;
+  --color-muted: #5d6476;
+  --color-faint: #8b8f9c;
+  --color-line: #e4e0d6;
+  --color-canvas: #f6f5f1;
+  --color-paper: #ffffff;
+
+  --color-blue: #14284b;
+  --color-blue-dark: #0b1a33;
+  --color-blue-wash: #e8ecf4;
+  --color-gold: #b8892b;
+  --color-gold-dark: #8a6416;
+  --color-gold-wash: #faf4e6;
+
+  --color-ok: #1e7a55;
+  --color-ok-wash: #e5f4ec;
+  --color-warn: #a35a06;
+  --color-warn-wash: #fdf1e1;
+  --color-bad: #b42318;
+  --color-bad-wash: #fdecea;
+}
+
+html {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Text links: certificate navy with a gold underline */
+.link {
+  color: var(--color-blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+.link:hover { text-decoration-color: var(--color-gold); }
+
+/* Headings in Cormorant are drawn small, so they get a little extra size */
+.heading {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  line-height: 1.05;
+  font-feature-settings: 'lnum' 1; /* normal (lining) numbers: Cormorant's default 1 looks like an I */
+}
+
+/* "Live" dot on the overview page */
+@keyframes live-pulse { 0% { box-shadow: 0 0 0 0 rgb(30 122 85 / 0.45); } 70% { box-shadow: 0 0 0 7px rgb(30 122 85 / 0); } 100% { box-shadow: 0 0 0 0 rgb(30 122 85 / 0); } }
+.live-dot { animation: live-pulse 2s ease-out infinite; }
+
+/* The certificate's blue + gold edge, reused as the app's signature mark */
+.edge-band {
+  background: linear-gradient(to right, var(--color-blue) 0 78%, var(--color-gold) 78% 100%);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}
+
+/* Tabs scroll sideways on phones without showing a scrollbar */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

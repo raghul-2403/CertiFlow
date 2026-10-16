@@ -1,0 +1,36 @@
+{
+  "name": "certiflow-server",
+  "version": "1.0.0",
+  "description": "CertiFlow API — event feedback via Google Form, auto-generated certificates, email delivery and certificate records",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon --quiet --watch src --watch ../client/src --watch ../client/public --ext js,jsx,mjs,css,json,html,svg,png,jpg scripts/run.mjs",
+    "start": "node scripts/run.mjs",
+    "test": "node --test --test-concurrency=1 test/certiflow.test.js test/features.test.js"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@fontsource/cinzel": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "exceljs": "^4.4.0",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^11.3.0",
+    "mongoose": "^9.11.2",
+    "morgan": "^1.12.1",
+    "nodemailer": "^10.1.1",
+    "pdfkit": "^0.20.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

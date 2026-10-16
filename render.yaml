@@ -1,0 +1,29 @@
+# One-click setup for Render (https://render.com): New → Blueprint → pick this repository.
+# Render asks for the values marked "sync: false" (see docs/DEPLOY.md).
+services:
+  - type: web
+    name: certiflow
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: cd client && npm ci && npm run build && cd ../server && npm ci --omit=dev
+    startCommand: cd server && node src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # the built-in test database is not needed online
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: "1"
+      - key: MONGODB_URI
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
