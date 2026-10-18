@@ -121,8 +121,15 @@ export default function Present() {
         <p className="max-w-md text-center text-white">{error}</p>
       ) : (
         // Framed like the certificate: paper panel, gold double rule
-        <div className="w-full max-w-[1280px] rounded-sm bg-[#fbfaf6] p-3 shadow-2xl sm:p-4">
-          <div className="relative isolate overflow-hidden border-[3px] border-double border-gold/80 p-6 sm:p-10 lg:p-14">
+        
+<div className="w-full max-w-[1280px] rounded-sm bg-[#fbfaf6] p-3 shadow-2xl sm:p-4">
+  <div
+    className="relative isolate overflow-hidden border-[3px] border-double border-gold/80 p-6 sm:p-10 lg:p-14
+    [&_.text-ink]:!text-[#14284b]
+    [&_.text-ink-soft]:!text-[#34405c]
+    [&_.text-muted]:!text-[#5d6476]"
+  >
+
             {/* College crest as a faint watermark behind the text (the QR sits on its own white card) */}
             {logo ? (
               <img src={logo} alt="" aria-hidden="true" className="pointer-events-none absolute -bottom-[12%] left-[18%] -z-10 w-[min(44%,520px)] opacity-[0.06] grayscale" />
@@ -135,7 +142,7 @@ export default function Present() {
                       <img src={logo} alt="" className="max-h-full max-w-full object-contain" />
                     </span>
                   ) : (
-                    <LogoMark className="size-9 text-blue" />
+                    <LogoMark className="size-9 text-[#14284b]" />
                   )}
                   <span className="text-[15px] sm:text-lg">{[org.name, org.unit].filter(Boolean).join(', ') || event?.organizer}</span>
                 </div>
@@ -171,7 +178,7 @@ export default function Present() {
                   )}
                 </div>
                 {code?.enabled ? (
-                  <div className="mt-4 overflow-hidden rounded-2xl bg-ink text-center text-white">
+                  <div className="mt-4 overflow-hidden rounded-2xl bg-[#14284b] text-center text-white">
                     <p className="pt-3 text-sm uppercase tracking-[0.25em] text-white/60">Event code</p>
                     <p className="heading pb-1 text-[clamp(3rem,7vw,5.2rem)] leading-none tracking-[0.25em] text-gold" aria-live="polite">{code.code}</p>
                     <p className="pb-3 text-sm text-white/60">changes in {Math.floor(codeSecs / 60)}:{String(codeSecs % 60).padStart(2, '0')}</p>

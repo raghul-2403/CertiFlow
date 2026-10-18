@@ -1,87 +1,550 @@
+
 @import 'tailwindcss';
 @import '@fontsource-variable/figtree';
 @import '@fontsource/cormorant-garamond/600.css';
 @import '@fontsource/cormorant-garamond/700.css';
 
-/* Design tokens — taken from the RMKCET certificate: its navy ink, gold frame,
-   paper background and Cormorant Garamond lettering */
+/* ==================================================
+   CERTIFLOW — MIDNIGHT BENTO THEME
+   Designed to blend with React Bits Magic Bento
+   ================================================== */
+
 @theme {
-  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Cormorant Garamond', ui-serif, Georgia, serif;
+  --font-sans: 'Figtree Variable', ui-sans-serif,
+    system-ui, sans-serif;
 
-  --color-ink: #0e1b36;
-  --color-ink-soft: #34405c;
-  --color-muted: #5d6476;
-  --color-faint: #8b8f9c;
-  --color-line: #e4e0d6;
-  --color-canvas: #f6f5f1;
-  --color-paper: #ffffff;
+  --font-serif: 'Cormorant Garamond',
+    ui-serif, Georgia, serif;
 
-  --color-blue: #14284b;
-  --color-blue-dark: #0b1a33;
-  --color-blue-wash: #e8ecf4;
-  --color-gold: #b8892b;
-  --color-gold-dark: #8a6416;
-  --color-gold-wash: #faf4e6;
+  
+/* Main surfaces */
+--color-ink: #f1f3f5;
+--color-ink-soft: #c9cdd3;
+--color-muted: #a4aab3;
+--color-faint: #858d99;
+--color-line: #2b3038;
+--color-canvas: #0e1014;
+--color-paper: #181b21;
 
-  --color-ok: #1e7a55;
-  --color-ok-wash: #e5f4ec;
-  --color-warn: #a35a06;
-  --color-warn-wash: #fdf1e1;
-  --color-bad: #b42318;
-  --color-bad-wash: #fdecea;
+/* Accent colors */
+--color-blue: #d6ac63;
+--color-blue-dark: #bd9049;
+--color-blue-wash: #28251f;
+
+--color-gold: #d6ac63;
+--color-gold-dark: #bd9049;
+--color-gold-wash: #29251d;
+
+/* Status colors */
+--color-ok: #58cb9a;
+--color-ok-wash: #18372b;
+
+--color-warn: #efbc71;
+--color-warn-wash: #392b1d;
+
+--color-bad: #f0848d;
+--color-bad-wash: #3a2026;
+
 }
+
+/* ==================================================
+   GLOBAL PAGE
+   ================================================== */
 
 html {
   color: var(--color-ink);
   background: var(--color-canvas);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
 }
 
-/* Text links: certificate navy with a gold underline */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ==================================================
+   TYPOGRAPHY
+   ================================================== */
+
+.heading {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  font-feature-settings: 'lnum' 1;
+}
+
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+/* ==================================================
+   LINKS
+   ================================================== */
+
 .link {
   color: var(--color-blue);
   font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+  text-decoration-color:
+    color-mix(in srgb, var(--color-blue) 45%, transparent);
   text-decoration-thickness: 1.5px;
   text-underline-offset: 4px;
-}
-.link:hover { text-decoration-color: var(--color-gold); }
-
-/* Headings in Cormorant are drawn small, so they get a little extra size */
-.heading {
-  font-family: var(--font-serif);
-  font-weight: 700;
-  letter-spacing: 0.005em;
-  line-height: 1.05;
-  font-feature-settings: 'lnum' 1; /* normal (lining) numbers: Cormorant's default 1 looks like an I */
+  transition: color 0.2s ease,
+    text-decoration-color 0.2s ease;
 }
 
-/* "Live" dot on the overview page */
-@keyframes live-pulse { 0% { box-shadow: 0 0 0 0 rgb(30 122 85 / 0.45); } 70% { box-shadow: 0 0 0 7px rgb(30 122 85 / 0); } 100% { box-shadow: 0 0 0 0 rgb(30 122 85 / 0); } }
-.live-dot { animation: live-pulse 2s ease-out infinite; }
-
-/* The certificate's blue + gold edge, reused as the app's signature mark */
-.edge-band {
-  background: linear-gradient(to right, var(--color-blue) 0 78%, var(--color-gold) 78% 100%);
+.link:hover {
+  color: #e0d1f0;
+  text-decoration-color: #e0d1f0;
 }
 
-:focus-visible {
+/* ==================================================
+   CARDS AND SURFACES
+   ================================================== */
+
+.bg-paper {
+  background-color: var(--color-paper);
+}
+
+.border-line {
+  border-color: var(--color-line);
+}
+
+/* Tailwind bg-ink was previously a dark navy surface.
+   Keep its meaning despite switching text-ink to white. */
+.bg-ink {
+  background-color: #1a1820;
+}
+
+/* Existing accent buttons should use dark text */
+.bg-gold.text-ink,
+.bg-gold .text-ink {
+  color: #17131d;
+}
+
+/* Cards — subtle premium elevation */
+.rounded-xl.bg-paper,
+.rounded-2xl.bg-paper {
+  box-shadow:
+    0 12px 32px -20px rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+/* ==================================================
+   FORM INPUTS
+   ================================================== */
+
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select {
+  color: var(--color-ink);
+  border-color: var(--color-line);
+  accent-color: var(--color-blue);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-faint);
+  opacity: 1;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--color-blue);
   outline-offset: 2px;
 }
 
+/* Preserve native light surfaces for specific content
+   such as uploaded certificate images and QR codes. */
+img,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* ==================================================
+   TABLES
+   ================================================== */
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead {
+  color: var(--color-muted);
+}
+
+tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: rgba(186, 165, 211, 0.045);
+}
+
+/* ==================================================
+   PREMIUM INTERACTIONS
+   ================================================== */
+
+button,
+a,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 3px;
+}
+
+/* ==================================================
+   MAGIC BENTO COMPATIBILITY
+   ================================================== */
+
+/* The component keeps its own animation engine.
+   These rules only align spacing and typography. */
+
+.magic-bento {
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+}
+
+.magic-bento__title {
+  color: #f4f4f5;
+  letter-spacing: -0.025em;
+}
+
+.magic-bento__description {
+  color: #aaa4b1;
+}
+
+.magic-bento__cell {
+  min-width: 0;
+}
+
+/* Preserve the visual effects from MagicBento.css.
+   Avoid overriding transform, filter, glow or animation. */
+
+/* ==================================================
+   LIVE STATUS INDICATOR
+   ================================================== */
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(89 213 161 / 0.45);
+  }
+
+  70% {
+    box-shadow: 0 0 0 7px rgb(89 213 161 / 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(89 213 161 / 0);
+  }
+}
+
+.live-dot {
+  animation: live-pulse 2s ease-out infinite;
+}
+
+/* ==================================================
+   CERTIFLOW BRAND ACCENT
+   ================================================== */
+
+.edge-band {
+  background: linear-gradient(
+    to right,
+    #211e28 0%,
+    #211e28 78%,
+    #baa5d3 78%,
+    #baa5d3 100%
+  );
+}
+
+/* ==================================================
+   MOBILE
+   ================================================== */
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==================================================
+   ACCESSIBILITY
+   ================================================== */
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==================================================
+   PRINT
+   ================================================== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+    color-scheme: light;
+  }
+}
+
+
+
+/* CERTIFLOW — GRAPHITE + GOLD DOTTED BACKGROUND */
+
+body {
+  background-color: #0e1014;
+
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(137, 143, 153, 0.25) 0.75px,
+      transparent 1px
+    );
+
+  background-size: 12px 12px;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+/* Subtle graphite glow instead of purple */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 8%,
+      rgba(78, 87, 101, 0.10) 0%,
+      transparent 65%
+    );
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+}
+
+
+/* Restore readable text on the light QR presentation card */
+.certiflow-presentation {
+  color: #14284b;
+}
+
+.certiflow-presentation .text-ink {
+  color: #14284b;
+}
+
+.certiflow-presentation .text-ink-soft {
+  color: #34405c;
+}
+
+.certiflow-presentation .text-muted {
+  color: #5d6476;
+}
+
+.certiflow-presentation .text-faint {
+  color: #8b8f9c;
+}
+
+
+
+/* CertiFlow dark background with subtle snowfall */
+html,
+body,
+#root {
+  min-height: 100%;
+  background-color: #100e14;
+}
+
+.pixel-snow-container,
+.pixel-snow-canvas {
+  background: transparent !important;
+}
+
+/* Keep the actual website above the background effect */
+#root {
+  position: relative;
+  isolation: isolate;
+}
+
+
+/* CertiFlow subtle white snowfall */
+
+.certiflow-snow {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  overflow: hidden;
+  pointer-events: none;
+  background: transparent !important;
+  user-select: none;
+  contain: layout;
+}
+
+.certiflow-snowflake {
+  position: absolute;
+  top: -30px;
+  display: block;
+  color: #ffffff;
+  line-height: 1;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+  will-change: transform;
+  animation-name: certiflow-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes certiflow-snow-fall {
+  from {
+    transform: translate3d(0, -30px, 0) rotate(0deg);
+  }
+
+  to {
+    transform: translate3d(30px, 110vh, 0) rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .certiflow-snowflake {
+    animation: none !important;
+    top: auto;
+    bottom: 8%;
+    opacity: 0.08 !important;
+  }
 }
 
 @media print {
-  .no-print { display: none !important; }
-  body { background: #fff; }
+  .certiflow-snow {
+    display: none !important;
+  }
 }
 
-/* Tabs scroll sideways on phones without showing a scrollbar */
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+
+
+/* J.A.R.V.I.S. — contained silver electric input border */
+
+@property --jarvis-border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.jarvis-silver-border {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: #43525e;
+}
+
+/* Rotating light, visible ONLY along the thin border */
+.jarvis-silver-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 2px;
+
+  
+background: conic-gradient(
+  from var(--jarvis-border-angle),
+  #8898A8 0deg,
+  #FFFFFF 40deg,
+  #FFFFFF 80deg,
+  #E8F4FF 120deg,
+  #657789 170deg,
+  #FFFFFF 250deg,
+  #FFFFFF 300deg,
+  #8898A8 360deg
+);
+
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+
+  animation: jarvis-border-travel 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Soft glow contained close to the edges */
+.jarvis-silver-border:focus-within {
+  box-shadow:
+    0 0 0 1px rgb(230 237 245 / 0.25),
+    0 0 10px rgb(221 230 239 / 0.18);
+}
+
+/* Keep the input above the animated border */
+.jarvis-silver-border > input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  background: #202d35;
+}
+
+@keyframes jarvis-border-travel {
+  to {
+    --jarvis-border-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jarvis-silver-border::before {
+    animation: none;
+  }
+}

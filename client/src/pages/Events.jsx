@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { CalendarPlus, MapPin, Search } from 'lucide-react';
 import { api, errorMessage } from '../lib/api.js';
 import { Button, Card, EmptyState, ErrorNote, EventStatusBadge, PageHeader, Skeleton, Tabs, eventStatus, useToast } from '../components/ui.jsx';
@@ -66,15 +66,22 @@ function EventCard({ ev }) {
   );
 }
 
+
 export default function Events() {
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const jarvisDraft = location.state?.jarvisDraft || null;
+
   const [params, setParams] = useSearchParams();
   const [events, setEvents] = useState(null);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
+
   const creating = params.get('new') === '1';
+
 
   useEffect(() => {
     api.get('/events').then((r) => setEvents(r.data.events)).catch((e) => setError(errorMessage(e)));
@@ -144,6 +151,7 @@ export default function Events() {
 
       <EventForm
         open={creating}
+        initialDraft={jarvisDraft}
         onClose={() => setParams({})}
         onSaved={(data) => {
           if (data.designError) toast(`Event created, but the design image failed: ${data.designError}. Upload it again under Certificate design.`, 'bad');

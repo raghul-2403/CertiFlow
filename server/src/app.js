@@ -15,6 +15,7 @@ import settingsRoutes from './routes/settings.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import publicRoutes from './routes/public.routes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
+import jarvisRoutes from './routes/jarvis.routes.js';
 
 const app = express();
 // Behind a hosting proxy (Render, Railway…) this gives the visitor's real IP to the rate limiter
@@ -46,6 +47,7 @@ app.use('/api/designs', designCatalog);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/jarvis', jarvisRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api', notFound);
 

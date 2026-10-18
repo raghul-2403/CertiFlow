@@ -32,7 +32,13 @@ function DesignOption({ selected, onSelect, title, text, icon: Icon }) {
   );
 }
 
-export default function EventForm({ open, event, onClose, onSaved }) {
+export default function EventForm({
+  open,
+  event,
+  initialDraft,
+  onClose,
+  onSaved,
+}) {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -42,33 +48,57 @@ export default function EventForm({ open, event, onClose, onSaved }) {
   const fileInput = useRef(null);
   const creating = !event;
 
-  useEffect(() => {
-    if (!open) return;
-    setError('');
-    setDesignFile(null);
-    setForm(
-      event
-        ? {
-            name: event.name,
-            organizer: event.organizer,
-            venue: event.venue || '',
-            date: toLocalInput(event.date),
-            description: event.description || '',
-            certificate: {
-              title: event.certificate?.title || EMPTY.certificate.title,
-              signatories: event.certificate?.signatories?.length ? event.certificate.signatories : [{ name: '', designation: '' }],
-            },
-          }
-        : EMPTY
-    );
-    if (!event) {
-      api.get('/designs').then((r) => {
+  
+useEffect(() => {
+  if (!open) return;
+
+  setError('');
+  setDesignFile(null);
+
+  setForm(
+    event
+      ? {
+          name: event.name,
+          organizer: event.organizer,
+          venue: event.venue || '',
+          date: toLocalInput(event.date),
+          description: event.description || '',
+          certificate: {
+            title:
+              event.certificate?.title ||
+              EMPTY.certificate.title,
+            signatories:
+              event.certificate?.signatories?.length
+                ? event.certificate.signatories
+                : [{ name: '', designation: '' }],
+          },
+        }
+      : {
+          ...EMPTY,
+          name: initialDraft?.name || '',
+          organizer: initialDraft?.organizer || '',
+          venue: initialDraft?.venue || '',
+          date: initialDraft?.date || '',
+          description: initialDraft?.description || '',
+          certificate: {
+            title: 'Certificate of Participation',
+            signatories: [
+              { name: '', designation: '' },
+            ],
+          },
+        }
+  );
+
+  if (!event) {
+    api.get('/designs')
+      .then((r) => {
         setPresets(r.data.presets);
-        // Your college design is picked by default when one exists
         setDesign(r.data.presets[0]?.key || 'builtin');
-      }).catch(() => setDesign('builtin'));
-    }
-  }, [open, event]);
+      })
+      .catch(() => setDesign('builtin'));
+  }
+}, [open, event, initialDraft]);
+
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const sigs = form.certificate.signatories;

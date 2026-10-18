@@ -1,0 +1,27 @@
+
+.gradient-ascii-container {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+.gradient-ascii-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.gradient-ascii-container {
+  background-color: transparent !important;
+}
+
+.gradient-ascii-canvas {
+  background-color: transparent !important;
+  opacity: 1;
+}

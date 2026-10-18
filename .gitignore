@@ -1,30 +1,46 @@
+
 # Dependencies
 node_modules/
 **/node_modules/
 
-# Environment files (secrets)
-.env
-.env.*
-!.env.example
-**/.env
-**/.env.*
-!**/.env.example
-
-# Local database
-server/.data/
-
 # Build files
 dist/
-build/
+**/dist/
+.vite/
+coverage/
 
-# Logs
+# Private environment variables
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Keep safe example configurations
+!.env.example
+!**/.env.example
+
+# Database and temporary data
+.data/
+**/.data/
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs and temporary files
 *.log
 npm-debug.log*
-
-# System files
 .DS_Store
 Thumbs.db
 
-# Editor files
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+token.json
+service-account.json
+
+# IDE settings
 .vscode/
 .idea/

@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth.jsx';
 import { orgLogoUrl, useOrg } from '../lib/org.jsx';
 import Logo from './Logo.jsx';
 import { Avatar, Button, cx } from './ui.jsx';
+import Jarvis from './Jarvis.jsx';
 
 const GROUPS = [
   {
@@ -195,16 +196,37 @@ export default function Layout() {
             <Logo className="lg:hidden" />
             <GlobalSearch className="hidden max-w-xl flex-1 md:block" />
             <div className="ml-auto flex items-center gap-2">
-              <Button icon={CalendarPlus} onClick={() => navigate('/events?new=1')} className="max-sm:px-3">
-                <span className="max-sm:hidden">New event</span>
-              </Button>
+              
+<button
+  type="button"
+  onClick={() => navigate('/events?new=1')}
+  className="
+    group flex h-10 items-center gap-2
+    rounded-xl border border-[#B8892B]/50
+    bg-[#211D24] px-4
+    text-sm font-semibold text-[#F0E6D1]
+    shadow-[0_0_0_1px_rgba(184,137,43,0.04)]
+    transition-all duration-300
+    hover:border-[#E4BD71]
+    hover:bg-[#2C2530]
+    hover:shadow-[0_0_18px_rgba(184,137,43,0.18)]
+    active:scale-[0.98]
+  "
+>
+  <CalendarPlus className="size-[18px] text-[#E4BD71]" />
+  <span className="hidden sm:inline">New event</span>
+  <span className="sm:hidden">New</span>
+</button>
+
             </div>
           </div>
         </header>
 
         <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 sm:px-8 lg:pt-10">
-          <Outlet />
+         <Outlet />
         </main>
+
+       <Jarvis />
       </div>
   );
 }

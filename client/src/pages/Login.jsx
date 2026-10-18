@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { api, errorMessage } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { Button, ErrorNote, Field, Input } from '../components/ui.jsx';
 import Logo from '../components/Logo.jsx';
+import BlurText from '../components/BlurText';
 
 const STEPS = ['Scan the event QR', 'Share feedback', 'Certificate arrives by email'];
 
@@ -15,11 +16,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [hint, setHint] = useState(null);
-
-  useEffect(() => {
-    api.get('/auth/bootstrap').then((r) => setHint(r.data.defaultLogin)).catch(() => {});
-  }, []);
 
   if (admin) return <Navigate to="/" replace />;
 
@@ -47,11 +43,41 @@ export default function Login() {
         </div>
         <Logo light />
         <div className="my-auto max-w-xl">
-          <h1 className="heading text-[3.4rem] leading-[1]">
-            Feedback in.
-            <br />
-            <span className="text-gold">Certificates out.</span>
-          </h1>
+          
+<div className="space-y-2">
+  <h1 className="sr-only">
+    Feedback in. Certificates out.
+  </h1>
+
+  <BlurText
+    text="Feedback in."
+    effect="blur"
+    animateBy="words"
+    direction="top"
+    trigger="load"
+    delay={300}
+    stepDuration={0.9}
+    blur={12}
+    distance={30}
+    loop={false}
+    className="text-[3.4rem] font-bold leading-[1.1] tracking-tight text-white"
+  />
+
+  <BlurText
+    text="Certificates out."
+    effect="blur"
+    animateBy="words"
+    direction="top"
+    trigger="load"
+    delay={300}
+    stepDuration={0.9}
+    blur={12}
+    distance={30}
+    loop={false}
+    className="text-[3.4rem] font-bold leading-[1.1] tracking-tight text-[#D6AC63]"
+  />
+</div>
+
           <p className="mt-4 max-w-md text-[15px] text-white/70">
             Participants scan one QR code after the event. A few minutes later this lands in their inbox, with a QR code anyone can scan to check it's genuine.
           </p>
@@ -99,24 +125,6 @@ export default function Login() {
             </Button>
           </div>
 
-          {hint ? (
-            <div className="mt-8 rounded-lg border border-gold/30 bg-gold-wash p-4 text-sm">
-              <p className="font-semibold text-ink">First time here?</p>
-              <p className="mt-1 text-ink-soft">
-                Log in with <b>{hint.email}</b> and password <b>{hint.password}</b>, then change the password in Settings.
-              </p>
-              <button
-                type="button"
-                className="link mt-2"
-                onClick={() => {
-                  setEmail(hint.email);
-                  setPassword(hint.password);
-                }}
-              >
-                Fill in for me
-              </button>
-            </div>
-          ) : null}
                   <p className="mt-8 text-sm text-muted">
             Student? <Link to="/my-certificates" className="link">Find your certificates</Link> or <Link to="/verify" className="link">verify one</Link>.
           </p>
