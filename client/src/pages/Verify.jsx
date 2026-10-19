@@ -1,135 +1,446 @@
+
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { Search, ShieldX } from 'lucide-react';
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  GraduationCap,
+  LoaderCircle,
+  Search,
+  ShieldCheck,
+  ShieldX,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
+
 import { api, errorMessage } from '../lib/api.js';
 import { fmtDate } from '../lib/format.js';
-import { Button, Input, Skeleton } from '../components/ui.jsx';
-import Logo from '../components/Logo.jsx';
+import SoftAurora from '../components/SoftAurora.jsx';
 
-// Gold rosette with a check, the same seal as in the CertiFlow logo
-function Seal({ ok = true }) {
+function AuroraBackground() {
   return (
-    <svg viewBox="24 24 14 14" className="size-14 shrink-0" aria-hidden="true">
-      <path
-        d="M31.00 24.10 L32.13 25.31 L33.64 24.63 L34.22 26.18 L35.88 26.12 L35.82 27.78 L37.37 28.36 L36.69 29.87 L37.90 31.00 L36.69 32.13 L37.37 33.64 L35.82 34.22 L35.88 35.88 L34.22 35.82 L33.64 37.37 L32.13 36.69 L31.00 37.90 L29.87 36.69 L28.36 37.37 L27.78 35.82 L26.12 35.88 L26.18 34.22 L24.63 33.64 L25.31 32.13 L24.10 31.00 L25.31 29.87 L24.63 28.36 L26.18 27.78 L26.12 26.12 L27.78 26.18 L28.36 24.63 L29.87 25.31Z"
-        fill={ok ? '#B8892B' : '#B42318'}
-      />
-      {ok ? (
-        <path d="M28.3 31.1l1.9 1.9 3.6-3.8" fill="none" stroke="#0E1B36" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M29 29l4 4M33 29l-4 4" fill="none" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" />
-      )}
-    </svg>
+    <div
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+      aria-hidden="true"
+    >
+      {/* Midnight background */}
+      <div className="absolute inset-0 bg-[#100D17]" />
+
+      {/* Official React Bits Soft Aurora */}
+      <div className="absolute inset-0">
+        <SoftAurora
+          speed={0.25}
+          scale={1.5}
+          brightness={0.8}
+          color1="#8CAFD0"
+          color2="#BBA7DB"
+          bandHeight={0.5}
+          bandSpread={1}
+          noiseFrequency={1.2}
+          noiseAmplitude={0.45}
+          colorSpeed={0.4}
+          enableMouseInteraction={true}
+          mouseInfluence={0.15}
+          clickPulse={false}
+          intro={true}
+          opacity={0.8}
+        />
+      </div>
+
+      {/* Subtle dark gradient for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#100D17]/10 via-[#100D17]/20 to-[#100D17]/80" />
+    </div>
   );
 }
 
-function Row({ label, value }) {
+
+function DetailRow({ label, value }) {
   return (
-    <div className="grid grid-cols-[130px_1fr] gap-3 py-3 text-[15px]">
-      <dt className="text-muted">{label}</dt>
-      <dd className="font-medium text-ink">{value}</dd>
+    <div className="grid gap-1.5 border-b border-white/[0.07] py-4 last:border-b-0 sm:grid-cols-[150px_1fr] sm:gap-4">
+      <dt className="text-sm text-[#BDB5C8]">
+        {label}
+      </dt>
+
+      <dd className="min-w-0 break-words text-sm font-medium text-[#F2EEF8]">
+        {value ?? 'Not specified'}
+      </dd>
     </div>
+  );
+}
+
+function ResultCard({ status, cert }) {
+  const valid = status === 'valid';
+
+  return (
+    <section
+      className="overflow-hidden rounded-[22px] border border-white/[0.12] bg-[#1D1925]/95 shadow-[0_20px_65px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+      aria-label="Certificate verification result"
+    >
+      <div
+        className={
+          valid
+            ? 'border-b border-[#8CE0B7]/20 bg-[#8CE0B7]/[0.08] px-5 py-6 sm:px-7'
+            : 'border-b border-[#F29BA5]/20 bg-[#F29BA5]/[0.08] px-5 py-6 sm:px-7'
+        }
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className={
+              valid
+                ? 'grid size-14 shrink-0 place-items-center rounded-2xl border border-[#8CE0B7]/25 bg-[#8CE0B7]/10 text-[#8CE0B7]'
+                : 'grid size-14 shrink-0 place-items-center rounded-2xl border border-[#F29BA5]/25 bg-[#F29BA5]/10 text-[#F29BA5]'
+            }
+          >
+            {valid ? (
+              <BadgeCheck className="size-8" />
+            ) : (
+              <ShieldX className="size-8" />
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <p
+              className={
+                valid
+                  ? 'text-xs font-semibold uppercase tracking-[0.15em] text-[#91E4BD]'
+                  : 'text-xs font-semibold uppercase tracking-[0.15em] text-[#F5AAB3]'
+              }
+            >
+              {valid
+                ? 'Verification successful'
+                : 'Certificate revoked'}
+            </p>
+
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              {valid
+                ? 'This certificate is genuine'
+                : 'This certificate has been revoked'}
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-[#D2C9DC]">
+              {valid
+                ? `Issued by ${cert.organizer || 'CertiFlow'} on ${fmtDate(cert.issuedAt)}.`
+                : 'This certificate has been withdrawn and is no longer valid.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <dl className="px-5 py-1 sm:px-7">
+        <DetailRow
+          label="Awarded to"
+          value={cert.name}
+        />
+
+        <DetailRow
+          label="Register number"
+          value={cert.regNo}
+        />
+
+        <DetailRow
+          label="College"
+          value={cert.college}
+        />
+
+        <DetailRow
+          label="Event"
+          value={cert.event}
+        />
+
+        {cert.award && (
+          <DetailRow
+            label="Award"
+            value={
+              <span className="inline-flex items-center gap-2 text-[#E9C885]">
+                <Award className="size-4" />
+                {cert.award}
+              </span>
+            }
+          />
+        )}
+
+        <DetailRow
+          label="Event date"
+          value={fmtDate(cert.eventDate)}
+        />
+
+        <DetailRow
+          label="Certificate ID"
+          value={
+            <span className="break-all font-mono tracking-wide text-[#CFB9E8]">
+              {cert.certificateId}
+            </span>
+          }
+        />
+      </dl>
+
+      <div className="flex items-center gap-2 border-t border-white/[0.07] px-5 py-4 text-xs text-[#BDB4C7] sm:px-7">
+        <ShieldCheck className="size-4 text-[#BBA7DB]" />
+        Verified against CertiFlow records
+      </div>
+    </section>
   );
 }
 
 export default function Verify() {
   const { certificateId } = useParams();
   const navigate = useNavigate();
+
   const [input, setInput] = useState(certificateId || '');
-  const [state, setState] = useState({ status: certificateId ? 'loading' : 'idle' });
+
+  const [state, setState] = useState({
+    status: certificateId ? 'loading' : 'idle',
+  });
 
   useEffect(() => {
     if (!certificateId) {
       setState({ status: 'idle' });
+      setInput('');
       return;
     }
+
+    let cancelled = false;
+
     setInput(certificateId);
     setState({ status: 'loading' });
+
     api
-      .get(`/public/verify/${encodeURIComponent(certificateId)}`)
-      .then((r) => setState({ status: r.data.valid ? 'valid' : 'revoked', cert: r.data.certificate }))
-      .catch((err) => setState({ status: 'invalid', message: errorMessage(err) }));
+      .get(
+        `/public/verify/${encodeURIComponent(certificateId)}`
+      )
+      .then(({ data }) => {
+        if (cancelled) return;
+
+        setState({
+          status: data.valid ? 'valid' : 'revoked',
+          cert: data.certificate,
+        });
+      })
+      .catch(error => {
+        if (cancelled) return;
+
+        setState({
+          status: 'invalid',
+          message: errorMessage(error),
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [certificateId]);
 
-  const submit = (e) => {
-    e.preventDefault();
+  function submit(event) {
+    event.preventDefault();
+
     const id = input.trim().toUpperCase();
-    if (id) navigate(`/verify/${id}`);
-  };
+
+    if (id) {
+      if (id === certificateId) {
+        setState({ status: 'loading' });
+        // Navigate to a fresh location to recheck the same ID.
+        navigate('/verify', { replace: true });
+        setTimeout(() => {
+          navigate(`/verify/${encodeURIComponent(id)}`);
+        }, 0);
+      } else {
+        navigate(`/verify/${encodeURIComponent(id)}`);
+      }
+    }
+  }
 
   const { status, cert } = state;
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="relative bg-ink text-white">
-        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gold" aria-hidden="true" />
-        <div className="mx-auto max-w-2xl px-5 pb-16 pt-8">
-          <Logo light />
-          <h1 className="heading mt-12 text-[2.8rem]">Certificate verification</h1>
-          <p className="mt-2 max-w-md text-[15px] text-white/70">
-            Enter the ID printed at the bottom of the certificate, or scan the QR code on it, to confirm it was really issued.
-          </p>
-        </div>
+    <main className="relative isolate flex min-h-screen flex-col overflow-hidden bg-[#100D17] font-sans text-[#F6F2FB]">
+
+      {/* IMPORTANT: Mount the actual Prism background */}
+      <AuroraBackground />
+
+      {/* Header */}
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-6 sm:px-9">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-3"
+        >
+          <span className="grid size-11 place-items-center rounded-xl border border-[#D6AC63]/25 bg-[#D6AC63]/10 text-[#D6AC63]">
+            <Award className="size-6" />
+          </span>
+
+          <div>
+            <p className="text-xl font-extrabold tracking-tight text-white">
+              CertiFlow
+            </p>
+
+            <p className="text-[10px] tracking-wide text-[#B4ACBE]">
+              CERTIFICATE VERIFICATION
+            </p>
+          </div>
+        </Link>
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#211B2B]/80 px-3 py-2.5 text-xs font-medium text-[#E2DCEB] backdrop-blur-xl transition-colors hover:border-[#BBA7DB]/40 hover:bg-[#30283B] sm:px-4 sm:text-sm"
+        >
+          <ArrowLeft className="size-4" />
+          Back to home
+        </Link>
       </header>
 
-      <main className="relative z-10 mx-auto -mt-8 max-w-2xl px-5 pb-16">
-        <form onSubmit={submit} className="flex gap-2 rounded-xl bg-paper p-2 shadow-[0_10px_30px_-12px_rgb(14_27_54_/_0.3)] ring-1 ring-line">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="CF-2026-7K3QXM"
-            aria-label="Certificate ID"
-            className="h-12 border-0 text-lg uppercase tracking-wide focus:ring-0"
-          />
-          <Button type="submit" icon={Search} className="h-12 px-5">Check</Button>
-        </form>
+      {/* Main content */}
+      <div className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-5 pb-12 pt-6 sm:px-8 sm:pt-10">
 
-        <div className="mt-8">
-          {status === 'loading' ? <Skeleton className="h-80 rounded-xl" /> : null}
+        {/* Hero */}
+        <section className="mx-auto max-w-2xl text-center">
 
-          {status === 'valid' || status === 'revoked' ? (
-            <section className="overflow-hidden rounded-xl border border-line bg-paper">
-              <div className={`flex items-center gap-4 px-6 py-5 ${status === 'valid' ? 'bg-ok-wash' : 'bg-bad-wash'}`}>
-                <Seal ok={status === 'valid'} />
-                <div>
-                  <p className={`heading text-[1.9rem] ${status === 'valid' ? 'text-ok' : 'text-bad'}`}>
-                    {status === 'valid' ? 'This certificate is genuine' : 'This certificate has been revoked'}
-                  </p>
-                  <p className="text-[15px] text-ink-soft">
-                    {status === 'valid' ? `Issued by ${cert.organizer} on ${fmtDate(cert.issuedAt)}` : `${cert.organizer} has withdrawn it. It is no longer valid.`}
-                  </p>
-                </div>
-              </div>
-              <dl className="divide-y divide-line px-6 py-1">
-                <Row label="Awarded to" value={cert.name} />
-                <Row label="Register no." value={cert.regNo} />
-                <Row label="College" value={cert.college} />
-                <Row label="Event" value={cert.event} />
-                {cert.award ? <Row label="Award" value={<span className="font-semibold text-gold-dark">{cert.award}</span>} /> : null}
-                <Row label="Event date" value={fmtDate(cert.eventDate)} />
-                <Row label="Certificate ID" value={<span className="tracking-wide">{cert.certificateId}</span>} />
-              </dl>
-            </section>
-          ) : null}
+          <div className="mx-auto mb-5 grid size-16 place-items-center rounded-2xl border border-[#B9D7ED]/30 bg-[#B9D7ED]/10 text-[#B9D7ED] shadow-[0_0_40px_rgba(185,215,237,0.14)]">
+            <ShieldCheck className="size-9" />
+          </div>
 
-          {status === 'invalid' ? (
-            <section className="flex items-start gap-4 rounded-xl border border-bad/20 bg-paper px-6 py-5">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-bad-wash"><ShieldX className="size-5 text-bad" /></span>
-              <div>
-                <p className="heading text-[1.7rem] text-bad">Not a valid certificate</p>
-                <p className="mt-0.5 text-[15px] text-ink-soft">{state.message}. Check the ID for typos, or ask the organiser.</p>
-              </div>
-            </section>
-          ) : null}
+          <h1 className="text-3xl font-bold leading-tight tracking-[-0.04em] text-white sm:text-5xl">
+            Verify a{' '}
+            <span className="bg-gradient-to-r from-[#F2F4FA] via-[#B9D7ED] to-[#C9B4E3] bg-clip-text text-transparent">
+              certificate.
+            </span>
+          </h1>
 
-          {status === 'idle' ? (
-            <p className="text-center text-sm text-muted">Certificate IDs look like CF-2026-7K3QXM.</p>
-          ) : null}
-          <p className="mt-10 text-center text-sm text-muted">
-            Lost your own certificate? <Link to="/my-certificates" className="link">Find all your certificates</Link>
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-[#D0C8D9] sm:text-base">
+            Enter the certificate ID printed on your
+            certificate, or scan its QR code, to check
+            whether it's genuine.
           </p>
+        </section>
+
+        {/* Search card */}
+        <section className="mx-auto mt-9 max-w-[620px]">
+          <form
+            onSubmit={submit}
+            className="relative overflow-hidden rounded-[22px] border border-white/[0.13] bg-[#1D1925]/95 p-5 shadow-[0_25px_75px_rgba(0,0,0,0.40)] backdrop-blur-2xl sm:p-7"
+          >
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#B9D7ED]/65 to-transparent"
+              aria-hidden="true"
+            />
+
+            <label
+              htmlFor="certificate-id"
+              className="mb-3 block text-sm font-medium text-[#E9E5EF]"
+            >
+              Certificate ID
+            </label>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#B9AFC3]" />
+
+                <input
+                  id="certificate-id"
+                  type="text"
+                  value={input}
+                  onChange={event =>
+                    setInput(event.target.value)
+                  }
+                  placeholder="CF-2026-7K3QXM"
+                  autoComplete="off"
+                  spellCheck={false}
+                  required
+                  className="h-12 w-full rounded-xl border border-[#5A4D68] bg-[#292333] pl-12 pr-4 text-sm font-medium uppercase tracking-wider text-[#F6F2FB] placeholder:text-[#AFA5BD] focus:border-[#BDD6EB] focus:outline-none focus:ring-2 focus:ring-[#BDD6EB]/20"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#B9D7ED] px-6 text-sm font-semibold text-[#17212C] transition-colors hover:bg-[#D3E5F3]"
+              >
+                Verify
+                <ArrowRight className="size-4" />
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {/* Verification results */}
+        <div
+          className="mx-auto mt-8 max-w-[620px]"
+          aria-live="polite"
+        >
+          {status === 'loading' && (
+            <div className="flex min-h-48 items-center justify-center rounded-[22px] border border-white/10 bg-[#1D1925]/90 backdrop-blur-xl">
+              <div className="text-center">
+                <LoaderCircle className="mx-auto size-9 animate-spin text-[#B9D7ED]" />
+                <p className="mt-4 text-sm text-[#D0C7DA]">
+                  Checking certificate records...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {(status === 'valid' ||
+            status === 'revoked') &&
+            cert && (
+              <ResultCard
+                status={status}
+                cert={cert}
+              />
+            )}
+
+          {status === 'invalid' && (
+            <section className="flex items-start gap-4 rounded-[22px] border border-[#F29BA5]/25 bg-[#241B27]/95 p-6 shadow-[0_15px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+              <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#F29BA5]/10 text-[#F29BA5]">
+                <XCircle className="size-7" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold text-[#FFC2C9]">
+                  Certificate not found
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-[#CFC4D0]">
+                  {state.message ||
+                    'We could not verify that certificate ID.'}
+                </p>
+
+                <p className="mt-2 text-xs text-[#ACA3B6]">
+                  Check for typing mistakes or contact
+                  the event organizer.
+                </p>
+              </div>
+            </section>
+          )}
+
+          {status === 'idle' && (
+            <p className="text-center text-xs text-[#C9BFCE]">
+              Certificate IDs look like CF-2026-7K3QXM.
+            </p>
+          )}
+
+          <div className="mt-9 flex flex-col items-center gap-3 text-center">
+            <span className="grid size-11 place-items-center rounded-full border border-[#D6AC63]/25 bg-[#D6AC63]/10 text-[#D6AC63]">
+              <GraduationCap className="size-5" />
+            </span>
+
+            <p className="text-sm text-[#D0C8D9]">
+              Looking for your own certificates?
+            </p>
+
+            <Link
+              to="/my-certificates"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#E5C582] transition-colors hover:text-[#F3DBA9]"
+            >
+              Find my certificates
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/[0.07] bg-[#100D17]/75 px-5 py-5 text-center text-xs text-[#AFA6B9] backdrop-blur-lg">
+        CertiFlow · R.M.K. College of Engineering and Technology
+      </footer>
+    </main>
   );
 }

@@ -2,26 +2,14 @@
 import { Router } from 'express';
 
 import { requireAuth } from '../middleware/auth.js';
+
 import { JarvisConversation } from '../models/JarvisConversation.js';
 
-import { askJarvis } from '../services/jarvisAI.js';
-import { answerEventQuestion } from '../services/jarvisEvents.js';
+import {
+  runJarvisAgent,
+} from '../services/jarvisAgent.js';
 
 import {
-  isEventCreationRequest,
-  prepareEventDraft,
-} from '../services/jarvisDraft.js';
-
-import {
-  createJarvisEvent,
-  parseEventEditCommand,
-  updateJarvisEvent,
-  prepareJarvisRename,
-  cancelJarvisRename,
-} from '../services/jarvisActions.js';
-
-import {
-  getPendingRename,
   authorizeRename,
 } from '../services/jarvisApproval.js';
 
@@ -72,19 +60,20 @@ async function saveMessages(
   }
 }
 
-// Backend status.
 router.get('/status', (req, res) => {
   res.json({
     name: 'J.A.R.V.I.S.',
     status: 'online',
-    phase: 'autonomous-approval-1',
+    phase: 'agent-core-v1',
     aiEnabled: Boolean(
       process.env.GEMINI_API_KEY ||
       process.env.GROQ_API_KEY
     ),
     eventIntelligenceEnabled: true,
+    agentEnabled: true,
     autonomousEventCreation: true,
     autonomousEventEditing: true,
+    feedbackControlEnabled: true,
     sensitiveApprovalEnabled: Boolean(
       process.env.JARVIS_ACCESS_KEY_HASH
     ),
@@ -92,7 +81,6 @@ router.get('/status', (req, res) => {
   });
 });
 
-// Saved conversation memory.
 router.get('/history', async (req, res, next) => {
   try {
     const conversation =
@@ -100,7 +88,7 @@ router.get('/history', async (req, res, next) => {
         admin: req.admin._id,
       }).lean();
 
-    res.json({
+    return res.json({
       messages: conversation?.messages || [],
     });
   } catch (error) {
@@ -108,7 +96,8 @@ router.get('/history', async (req, res, next) => {
   }
 });
 
-// Access-key verification endpoint.
+// Sensitive authorization is separate from chat.
+// Never pass access keys through AI or chat history.
 router.post('/approval', async (req, res, next) => {
   try {
     const {
@@ -122,7 +111,6 @@ router.post('/approval', async (req, res, next) => {
       accessKey,
     });
 
-    // Never store the actual access key.
     if (result.approved) {
       await saveMessages(
         req.admin._id,
@@ -146,7 +134,7 @@ router.post('/approval', async (req, res, next) => {
   }
 });
 
-// Main J.A.R.V.I.S. conversation endpoint.
+// Natural-language J.A.R.V.I.S. Agent endpoint.
 router.post('/chat', async (req, res) => {
   const message = req.body?.message;
 
@@ -169,206 +157,47 @@ router.post('/chat', async (req, res) => {
         admin: req.admin._id,
       }).lean();
 
-    const history = (
-      conversation?.messages || []
-    )
-      .slice(-11)
+    const history = (conversation?.messages || [])
+      .slice(-12)
       .map(item => ({
         role: item.role,
         content: item.content,
       }));
 
-    let reply;
-    let provider = 'certiflow';
-    let draft = null;
-    let createdEvent = null;
-    let approvalRequired = false;
-    let approvalId = null;
-
-    const editCommand = parseEventEditCommand(content);
-
-    if (editCommand) {
-      // Sensitive event rename.
-      if (
-        editCommand.type === 'rename' ||
-        editCommand.type === 'confirm-rename'
-      ) {
-        if (req.admin.role !== 'admin') {
-          reply =
-            'Access denied. Only an administrator can authorize sensitive operations.';
-        } else if (
-          !process.env.JARVIS_ACCESS_KEY_HASH
-        ) {
-          reply =
-            'Access-key verification is not configured on the server.';
-        } else {
-          const prepared =
-            editCommand.type === 'rename'
-              ? await prepareJarvisRename({
-                  command: editCommand,
-                  admin: req.admin,
-                  instruction: content,
-                })
-              : null;
-
-          const pending =
-            await getPendingRename(req.admin._id);
-
-          if (
-            pending &&
-            (
-              editCommand.type === 'confirm-rename' ||
-              prepared?.pending
-            )
-          ) {
-            approvalRequired = true;
-            approvalId = String(pending._id);
-
-            reply = [
-              prepared?.message ||
-                `Pending rename: ${pending.details?.oldName} → ${pending.details?.newName}`,
-              '',
-              'Please enter the access key to continue.',
-            ].join('\n');
-          } else {
-            reply =
-              prepared?.message ||
-              'No eligible pending rename was found.';
-          }
-        }
-      } else if (
-        editCommand.type === 'cancel-rename'
-      ) {
-        const result = await cancelJarvisRename({
-          admin: req.admin,
-        });
-
-        reply = result.message;
-      } else if (
-        ['venue', 'description'].includes(
-          editCommand.type
-        )
-      ) {
-        const result = await updateJarvisEvent({
-          command: editCommand,
-          admin: req.admin,
-          instruction: content,
-        });
-
-        reply = result.message;
-      } else {
-        reply =
-          'Unsupported event editing command.';
-      }
-    } else {
-      const directCreation =
-        /\b(create|add|make|schedule|set up)\b/i
-          .test(content) &&
-        /\b(event|workshop|seminar|webinar|hackathon|conference|competition|session|training)\b/i
-          .test(content) &&
-        !/\b(don't|do not|without creating|just explain|only explain|draft|preview|suggest|help me|how to)\b/i
-          .test(content);
-
-      if (
-        directCreation ||
-        isEventCreationRequest(content)
-      ) {
-        const prepared =
-          await prepareEventDraft(content);
-
-        provider = prepared.provider;
-        draft = prepared.draft;
-
-        if (
-          directCreation &&
-          !prepared.missing.length
-        ) {
-          const action = await createJarvisEvent({
-            draft,
-            admin: req.admin,
-            instruction: content,
-          });
-
-          if (action.success) {
-            createdEvent = action.event;
-            draft = null;
-
-            reply = [
-              'Event created successfully.',
-              '',
-              `Name: ${createdEvent.name}`,
-              `Organizer: ${createdEvent.organizer}`,
-              `Date and time: ${createdEvent.date}`,
-              `Venue: ${createdEvent.venue || 'Not specified'}`,
-              '',
-              'Feedback is disabled until you review and activate the event.',
-            ].join('\n');
-          } else {
-            draft = null;
-            reply = action.message;
-          }
-        } else {
-          reply = [
-            'Event draft prepared.',
-            '',
-            `Name: ${draft.name || 'Not specified'}`,
-            `Organizer: ${draft.organizer || 'Not specified'}`,
-            `Date and time: ${draft.date || 'Not specified'}`,
-            `Venue: ${draft.venue || 'Not specified'}`,
-            '',
-            prepared.missing.length
-              ? `Missing: ${prepared.missing.join(', ')}`
-              : 'Ready for review.',
-            '',
-            'Select Review Event Draft to continue.',
-            'No event has been created.',
-          ].join('\n');
-        }
-      } else {
-        const eventAnswer =
-          await answerEventQuestion(content);
-
-        if (eventAnswer !== null) {
-          reply = eventAnswer;
-        } else {
-          const response = await askJarvis([
-            ...history,
-            {
-              role: 'user',
-              content,
-            },
-          ]);
-
-          reply = response.reply;
-          provider = response.provider;
-        }
-      }
-    }
+    const result = await runJarvisAgent({
+      message: content,
+      history,
+      admin: req.admin,
+    });
 
     await saveMessages(
       req.admin._id,
       content,
-      reply,
-      provider
+      result.reply,
+      result.provider
     );
 
-    return res.json({
-      reply,
-      provider,
-      draft,
-      createdEvent,
-      approvalRequired,
-      approvalId,
-    });
+
+return res.json({
+  reply: result.reply,
+  provider: result.provider,
+  draft: result.draft,
+  createdEvent: result.createdEvent,
+  approvalRequired: result.approvalRequired,
+  approvalId: result.approvalId,
+  dataChanged: result.dataChanged === true,
+});
+
   } catch (error) {
     console.error(
-      'J.A.R.V.I.S. chat failed:',
+      'J.A.R.V.I.S. Agent failed:',
       error.message
     );
 
     return res.status(503).json({
       error:
-        'J.A.R.V.I.S. could not complete this request. Check the event record before retrying.',
+        'J.A.R.V.I.S. could not complete the request. ' +
+        'Please check event records before retrying.',
     });
   }
 });

@@ -24,6 +24,9 @@ import { api } from '../lib/api.js';
 
 import JarvisHorizon from './JarvisHorizon.jsx';
 import JarvisAccessPrompt from './JarvisAccessPrompt.jsx';
+import {
+  notifyCertiFlowDataChanged,
+} from '../lib/dataRefresh.js';
 
 export default function Jarvis() {
   const navigate = useNavigate();
@@ -202,6 +205,14 @@ export default function Jarvis() {
 
       setEventDraft(data.draft || null);
 
+if (data.dataChanged === true) {
+  notifyCertiFlowDataChanged({
+    source: 'jarvis',
+    operation: 'chat',
+  });
+}
+
+
       setMessages(previous => [
         ...previous.slice(0, -1),
         {
@@ -253,6 +264,16 @@ export default function Jarvis() {
   }
 
   function handleApprovalResult(data) {
+
+
+if (data.approved === true && data.eventId) {
+  notifyCertiFlowDataChanged({
+    source: 'jarvis',
+    operation: 'approved-action',
+    eventId: data.eventId,
+  });
+}
+
     const content = data.approved
       ? `Access Approved\n\n${data.result}`
       : data.result ||
@@ -276,7 +297,7 @@ export default function Jarvis() {
         preload="auto"
       />
 
-      
+
 {open && (
     <section
       role="dialog"
@@ -449,7 +470,7 @@ export default function Jarvis() {
           )}
 
           {/* Chat input */}
-          
+
 
 {/* Chat input — aligned silver electric border */}
 

@@ -1,9 +1,12 @@
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import CountUp from '../components/CountUp';
 import TextType from '../components/TextType';
 import ShinyText from '../components/ShinyText';
+import CertiFlowDotOverlay from '../components/CertiFlowDotOverlay.jsx';
+import {
+  subscribeToCertiFlowDataChanged,
+} from '../lib/dataRefresh.js';
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -48,10 +51,10 @@ import DesignThumb from '../components/DesignThumb.jsx';
 function greeting() {
   const h = new Date().getHours();
 
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
+  if (h < 12) return 'Good Morning';
+  if (h < 17) return 'Good Afternoon';
 
-  return 'Good evening';
+  return 'Good Evening';
 }
 
 // ------------------------------------------------
@@ -607,7 +610,7 @@ function TypedDashboardHeader({
         mistakes={0}
       />
 
-      
+
 <h1 className="heading mt-2 text-[2.8rem] text-ink">
   <ShinyText
     color="#D6AC63"
@@ -687,13 +690,27 @@ export default function Dashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    load();
 
-    const timer = setInterval(load, 15000);
+useEffect(() => {
+  // Initial dashboard load
+  load();
 
-    return () => clearInterval(timer);
-  }, [load]);
+  // Existing periodic refresh
+  const timer = setInterval(load, 15000);
+
+  // Immediately refresh when J.A.R.V.I.S.
+  // confirms a database modification.
+  const unsubscribe =
+    subscribeToCertiFlowDataChanged(() => {
+      load();
+    });
+
+  return () => {
+    clearInterval(timer);
+    unsubscribe();
+  };
+}, [load]);
+
 
   const spot = useMemo(
     () => pickSpotlight(allEvents),
@@ -741,7 +758,7 @@ export default function Dashboard() {
     .filter(e => e._id !== spot?.event._id)
     .slice(0, 4);
 
-  
+
   // ----------------------------------------------
   // CERTIFLOW MAGIC BENTO CARDS
   // ----------------------------------------------
@@ -829,7 +846,7 @@ export default function Dashboard() {
 
   return (
     <>
-        
+
 {/* DASHBOARD HEADER */}
 
 <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -840,7 +857,7 @@ export default function Dashboard() {
   />
 
   {google.connected && (
-    
+
 
 
 <Button

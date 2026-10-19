@@ -1,31 +1,64 @@
-import { useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router';
-import { api, errorMessage } from '../lib/api.js';
-import { useAuth } from '../lib/auth.jsx';
-import { Button, ErrorNote, Field, Input } from '../components/ui.jsx';
-import Logo from '../components/Logo.jsx';
-import BlurText from '../components/BlurText';
 
-const STEPS = ['Scan the event QR', 'Share feedback', 'Certificate arrives by email'];
+import { useState } from 'react';
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from 'react-router';
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  GraduationCap,
+  LockKeyhole,
+  ShieldCheck,
+} from 'lucide-react';
+
+import { errorMessage } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
+
+import {
+  Button,
+  ErrorNote,
+  Field,
+  Input,
+} from '../components/ui.jsx';
+
+import Logo from '../components/Logo.jsx';
+import BlurText from '../components/BlurText.jsx';
+import GhostFibers from '../components/GhostFibers.jsx';
 
 export default function Login() {
   const { admin, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (admin) return <Navigate to="/" replace />;
+  if (admin) {
+    return <Navigate to="/" replace />;
+  }
 
-  async function submit(e) {
-    e.preventDefault();
+  async function submit(event) {
+    event.preventDefault();
+
+    if (busy) return;
+
     setError('');
     setBusy(true);
+
     try {
       await login(email, password);
-      navigate(location.state?.from || '/', { replace: true });
+
+      navigate(
+        location.state?.from || '/',
+        { replace: true }
+      );
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -34,102 +67,186 @@ export default function Login() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
-      <div className="relative hidden overflow-hidden bg-ink px-14 py-12 text-white lg:flex lg:flex-col">
-        <div className="absolute inset-y-0 left-0 flex">
-          <div className="w-[3px] bg-gold" />
-          <div className="w-[5px]" />
-          <div className="w-px bg-gold/50" />
-        </div>
-        <Logo light />
-        <div className="my-auto max-w-xl">
-          
-<div className="space-y-2">
-  <h1 className="sr-only">
-    Feedback in. Certificates out.
-  </h1>
+    <main className="relative isolate flex min-h-screen flex-col overflow-hidden bg-[#0D0C14] text-white">
 
-  <BlurText
-    text="Feedback in."
-    effect="blur"
-    animateBy="words"
-    direction="top"
-    trigger="load"
-    delay={300}
-    stepDuration={0.9}
-    blur={12}
-    distance={30}
-    loop={false}
-    className="text-[3.4rem] font-bold leading-[1.1] tracking-tight text-white"
-  />
-
-  <BlurText
-    text="Certificates out."
-    effect="blur"
-    animateBy="words"
-    direction="top"
-    trigger="load"
-    delay={300}
-    stepDuration={0.9}
-    blur={12}
-    distance={30}
-    loop={false}
-    className="text-[3.4rem] font-bold leading-[1.1] tracking-tight text-[#D6AC63]"
-  />
-</div>
-
-          <p className="mt-4 max-w-md text-[15px] text-white/70">
-            Participants scan one QR code after the event. A few minutes later this lands in their inbox, with a QR code anyone can scan to check it's genuine.
-          </p>
-          <figure className="mt-9">
-            <img
-              src="/sample-certificate.jpg"
-              alt="Sample certificate of participation for Query Quest, awarded to Arjun Kumar"
-              className="w-full max-w-[540px] -rotate-[1.5deg] rounded-[3px] shadow-[0_24px_60px_-12px_rgb(0_0_0_/_0.6)] ring-1 ring-white/10"
-            />
-          </figure>
-          <ol className="mt-10 flex flex-wrap gap-x-7 gap-y-2 text-sm text-white/80">
-            {STEPS.map((step, i) => (
-              <li key={step} className="flex items-center gap-2.5">
-                <span className="heading text-xl text-gold">{i + 1}</span>
-                {step}
-              </li>
-            ))}
-          </ol>
-        </div>
+      {/* FULL SCREEN REACT BITS GHOST FIBERS */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        aria-hidden="true"
+      >
+        <GhostFibers
+          className="h-full w-full"
+          glowColor="#d4d4d8"
+          layers={1}
+          twist={1.5}
+          threads={54}
+          fiberStyle="dashes"
+          depthOfField={0.6}
+          hoverEffect="focus"
+          intro={true}
+          mouseInteraction={true}
+          lineColor="#ffffff"
+          secondaryColor="#a1a1aa"
+          volume={0.4}
+          foldGlow={1.5}
+          particles={0.15}
+          sparkle={0.35}
+          glow={0.6}
+        />
       </div>
 
-      <div className="flex items-center justify-center px-5 py-12">
-        <form onSubmit={submit} className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden">
-            <Logo />
-            <img
-              src="/sample-certificate.jpg"
-              alt="Sample certificate of participation for Query Quest"
-              className="mt-6 w-full rounded-[3px] shadow-[0_12px_30px_-10px_rgb(14_27_54_/_0.45)] ring-1 ring-line"
+      {/* Subtle dark overlay for readability */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] bg-[#0D0C14]/20"
+        aria-hidden="true"
+      />
+
+      {/* HEADER */}
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-6 sm:px-9">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-3"
+        >
+          <Logo light />
+        </Link>
+
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#211D27]/70 px-4 py-2.5 text-sm font-medium text-white/80 backdrop-blur-md transition-colors hover:border-[#D6AC63]/40 hover:text-white"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </Link>
+      </header>
+
+      {/* LOGIN CONTENT */}
+      <section className="relative z-10 flex w-full flex-1 items-center justify-center px-5 py-10 sm:px-8">
+
+        <div className="w-full max-w-[440px]">
+
+          {/* Intro */}
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl border border-[#D6AC63]/35 bg-[#D6AC63]/10 text-[#E7C684] shadow-[0_0_35px_rgba(214,172,99,0.12)]">
+              <ShieldCheck className="size-7" />
+            </div>
+
+            <BlurText
+              text="Welcome back."
+              effect="blur"
+              animateBy="words"
+              direction="top"
+              trigger="load"
+              delay={200}
+              stepDuration={0.7}
+              blur={10}
+              distance={25}
+              loop={false}
+              className="justify-center text-4xl font-bold tracking-tight text-[#F7F4FA] sm:text-[2.8rem]"
             />
-          </div>
-          <h2 className="heading text-[2.4rem]">Coordinator login</h2>
-          <p className="mt-1.5 text-[15px] text-muted">Manage events, feedback and certificates.</p>
 
-          <div className="mt-8 space-y-4">
-            <Field label="Email">
-              <Input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </Field>
-            <Field label="Password">
-              <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </Field>
-            <ErrorNote>{error}</ErrorNote>
-            <Button type="submit" loading={busy} className="w-full">
-              Log in
-            </Button>
+            <p className="mt-3 text-sm text-[#BCB5C3]">
+              Sign in to your CertiFlow administration workspace.
+            </p>
           </div>
 
-                  <p className="mt-8 text-sm text-muted">
-            Student? <Link to="/my-certificates" className="link">Find your certificates</Link> or <Link to="/verify" className="link">verify one</Link>.
-          </p>
-        </form>
-      </div>
-    </div>
+          {/* GLASS LOGIN CARD */}
+          <form
+            onSubmit={submit}
+            className="relative overflow-hidden rounded-[24px] border border-white/[0.13] bg-[#19171F]/90 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.48)] backdrop-blur-2xl sm:p-8"
+          >
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6AC63]/60 to-transparent"
+              aria-hidden="true"
+            />
+
+            <div className="mb-7 flex items-center gap-3">
+              <div className="grid size-10 place-items-center rounded-xl border border-[#D6AC63]/20 bg-[#D6AC63]/10 text-[#D6AC63]">
+                <LockKeyhole className="size-5" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold text-white">
+                  Administrator Login
+                </h2>
+
+                <p className="mt-0.5 text-xs text-[#AFA8B8]">
+                  Authorized administrators and coordinators
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <Field label="Email address">
+                <Input
+                  type="email"
+                  autoComplete="username"
+                  value={email}
+                  onChange={event =>
+                    setEmail(event.target.value)
+                  }
+                  placeholder="Enter your email"
+                  required
+                  disabled={busy}
+                />
+              </Field>
+
+              <Field label="Password">
+                <Input
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={event =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Enter your password"
+                  required
+                  disabled={busy}
+                />
+              </Field>
+
+              {error && (
+                <ErrorNote>{error}</ErrorNote>
+              )}
+
+              <Button
+                type="submit"
+                loading={busy}
+                disabled={busy}
+                className="mt-2 w-full justify-center bg-[#D6AC63] font-semibold text-[#17131D] hover:bg-[#E7C684]"
+              >
+                Log in
+                <ArrowRight className="ml-2 size-4" />
+              </Button>
+            </div>
+          </form>
+
+          {/* STUDENT AND VERIFICATION LINKS */}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 text-sm text-[#BAB2C1]">
+            <Link
+              to="/my-certificates"
+              className="inline-flex items-center gap-2 transition-colors hover:text-[#E7C684]"
+            >
+              <GraduationCap className="size-4" />
+              Student portal
+            </Link>
+
+            <span className="hidden size-1 rounded-full bg-white/30 sm:block" />
+
+            <Link
+              to="/verify"
+              className="inline-flex items-center gap-2 transition-colors hover:text-[#E7C684]"
+            >
+              <BadgeCheck className="size-4" />
+              Verify certificate
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="relative z-10 border-t border-white/[0.07] bg-[#0D0C14]/40 px-5 py-5 text-center text-xs text-[#A8A1B0] backdrop-blur-sm">
+        CertiFlow · R.M.K. College of Engineering and Technology
+      </footer>
+    </main>
   );
 }

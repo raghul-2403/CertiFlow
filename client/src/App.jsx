@@ -12,6 +12,7 @@ import { OrgProvider } from './lib/org.jsx';
 import { Spinner, ToastProvider } from './components/ui.jsx';
 
 import Layout from './components/Layout.jsx';
+import Welcome from './pages/Welcome.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Events from './pages/Events.jsx';
@@ -22,18 +23,19 @@ import Verify from './pages/Verify.jsx';
 import Present from './pages/Present.jsx';
 import MyCertificates from './pages/MyCertificates.jsx';
 
-// Protected pages
+function LoadingScreen() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-[#100e14]">
+      <Spinner />
+    </div>
+  );
+}
+
 function RequireAuth({ children }) {
   const { admin, ready } = useAuth();
   const location = useLocation();
 
-  if (!ready) {
-    return (
-      <div className="min-h-screen">
-        <Spinner />
-      </div>
-    );
-  }
+  if (!ready) return <LoadingScreen />;
 
   if (!admin) {
     return (
@@ -48,8 +50,21 @@ function RequireAuth({ children }) {
   return children;
 }
 
-// Lightweight white snowflakes.
-// Pure CSS animation: no WebGL or full-screen canvas.
+// Visitors see Welcome. Authenticated users see Dashboard.
+function Home() {
+  const { admin, ready } = useAuth();
+
+  if (!ready) return <LoadingScreen />;
+
+  if (!admin) return <Welcome />;
+
+  return (
+    <Layout />
+  );
+}
+
+// Show snow on the existing authenticated dashboard pages,
+// but not on the new cinematic welcome screen or QR projector.
 const SNOWFLAKES = Array.from({ length: 28 }, (_, i) => ({
   id: i,
   left: `${(i * 37.7 + 13) % 100}%`,
@@ -61,9 +76,15 @@ const SNOWFLAKES = Array.from({ length: 28 }, (_, i) => ({
 
 function CertiFlowSnow() {
   const location = useLocation();
+  const { admin } = useAuth();
 
-  // Keep the projector QR code easy to scan.
-  if (/^\/events\/[^/]+\/present\/?$/.test(location.pathname)) {
+  if (
+    !admin ||
+    location.pathname === '/login' ||
+    location.pathname === '/my-certificates' ||
+    location.pathname.startsWith('/verify') ||
+    /^\/events\/[^/]+\/present\/?$/.test(location.pathname)
+  ) {
     return null;
   }
 
@@ -72,7 +93,7 @@ function CertiFlowSnow() {
       className="certiflow-snow no-print"
       aria-hidden="true"
     >
-      {SNOWFLAKES.map((flake) => (
+      {SNOWFLAKES.map(flake => (
         <span
           key={flake.id}
           className="certiflow-snowflake"
@@ -97,21 +118,29 @@ export default function App() {
       <AuthProvider>
         <OrgProvider>
           <ToastProvider>
-            <CertiFlowSnow />
+
 
             <Routes>
+              {/* Public entry and login */}
               <Route path="/login" element={<Login />} />
 
-              <Route path="/verify" element={<Verify />} />
-              <Route
-                path="/verify/:certificateId"
-                element={<Verify />}
-              />
+              {/* Student certificate access */}
               <Route
                 path="/my-certificates"
                 element={<MyCertificates />}
               />
 
+              {/* Public certificate verification */}
+              <Route
+                path="/verify"
+                element={<Verify />}
+              />
+              <Route
+                path="/verify/:certificateId"
+                element={<Verify />}
+              />
+
+              {/* Protected QR projector */}
               <Route
                 path="/events/:id/present"
                 element={
@@ -121,11 +150,11 @@ export default function App() {
                 }
               />
 
+              {/* Home: Welcome for visitors, dashboard for admins */}
               <Route
+                path="/"
                 element={
-                  <RequireAuth>
-                    <Layout />
-                  </RequireAuth>
+                  <RequireHome />
                 }
               >
                 <Route index element={<Dashboard />} />
@@ -138,7 +167,10 @@ export default function App() {
                   path="certificates"
                   element={<Certificates />}
                 />
-                <Route path="settings" element={<Settings />} />
+                <Route
+                  path="settings"
+                  element={<Settings />}
+                />
               </Route>
 
               <Route
@@ -151,4 +183,29 @@ export default function App() {
       </AuthProvider>
     </BrowserRouter>
   );
+}
+
+// For public visitors, the landing route renders Welcome.
+// Logged-in coordinators retain the original Layout + Outlet.
+function RequireHome() {
+  const { admin, ready } = useAuth();
+  const location = useLocation();
+
+  if (!ready) return <LoadingScreen />;
+
+  if (!admin) {
+    if (location.pathname === '/') {
+      return <Welcome />;
+    }
+
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
+  }
+
+  return <Layout />;
 }

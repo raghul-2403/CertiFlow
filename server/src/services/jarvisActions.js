@@ -107,11 +107,44 @@ export function parseEventEditCommand(message) {
   return null;
 }
 
+
+function normalizeEventName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 async function findExactEvent(name) {
-  return Event.findOne({
+  // Fast lookup using the existing indexed nameKey.
+  const exact = await Event.findOne({
     nameKey: nameKeyOf(name),
   });
+
+  if (exact) return exact;
+
+  // Accept harmless formatting differences:
+  // "demo 1", "DEMO-1", "demo_1".
+  const target = normalizeEventName(name);
+
+  if (!target) return null;
+
+  const candidates = await Event.find(
+    {},
+    { name: 1 }
+  ).lean();
+
+  const matches = candidates.filter(
+    event =>
+      normalizeEventName(event.name) === target
+  );
+
+  // Never guess when multiple names are equivalent.
+  if (matches.length !== 1) return null;
+
+  return Event.findById(matches[0]._id);
 }
+
 
 // Preserve existing autonomous event creation.
 export async function createJarvisEvent({

@@ -3,44 +3,36 @@
 node_modules/
 **/node_modules/
 
-# Build files
+# Build output
 dist/
 **/dist/
-.vite/
-coverage/
 
-# Private environment variables
+# Environment variables and secrets
 .env
 .env.*
 **/.env
 **/.env.*
 
-# Keep safe example configurations
+# Safe configuration templates
 !.env.example
 !**/.env.example
+!.env.sample
+!**/.env.sample
 
-# Database and temporary data
+# Local database files
 .data/
 **/.data/
-*.sqlite
-*.sqlite3
-*.db
 
-# Logs and temporary files
+# Logs
 *.log
 npm-debug.log*
-.DS_Store
-Thumbs.db
+yarn-debug.log*
+yarn-error.log*
 
-# Secrets
+# Private keys
 *.pem
 *.key
-*.p12
-*.pfx
-credentials.json
-token.json
-service-account.json
 
-# IDE settings
-.vscode/
-.idea/
+# Operating system files
+.DS_Store
+Thumbs.db
